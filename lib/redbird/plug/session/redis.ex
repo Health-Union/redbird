@@ -1,5 +1,4 @@
 defmodule Plug.Session.REDIS do
-  import Redbird.Redis
   require IEx
 
   @moduledoc """
@@ -12,12 +11,12 @@ defmodule Plug.Session.REDIS do
 
   def init(opts) do
     opts
-  end
+  end-
 
   def get(_conn, namespaced_key, _init_options) do
-    case get(namespaced_key) do
-      :undefined -> {nil, %{}}
-      value -> {namespaced_key, value |> :erlang.binary_to_term()}
+    case Redix.command(:redix, ["GET", namespaced_key]) do
+      {:ok, value} -> {namespaced_key, value |> :erlang.binary_to_term()}
+      _ -> {nil, %{}}
     end
   end
 
@@ -26,30 +25,12 @@ defmodule Plug.Session.REDIS do
   end
 
   def put(_conn, namespaced_key, data, init_options) do
-    set_key_with_retries(
-      namespaced_key,
-      data,
-      session_expiration(init_options),
-      1
-    )
-  end
-
-  defp set_key_with_retries(key, data, seconds, counter) do
-    case setex(%{key: key, value: data, seconds: seconds}) do
-      :ok ->
-        key
-
-      response ->
-        if counter > 5 do
-          Redbird.RedisError.raise(error: response, key: key)
-        else
-          set_key_with_retries(key, data, seconds, counter + 1)
-        end
-    end
+    Redix.command(:redix, ["SETEX", namespaced_key, session_expiration(init_options), data])
+    namespaced_key
   end
 
   def delete(_conn, redis_key, _init_options) do
-    del(redis_key)
+    Redix.command(:redix, ["DEL", redis_key])
     :ok
   end
 
