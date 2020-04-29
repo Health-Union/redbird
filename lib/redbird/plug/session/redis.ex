@@ -11,7 +11,7 @@ defmodule Plug.Session.REDIS do
 
   def init(opts) do
     opts
-  end-
+  end
 
   def get(_conn, namespaced_key, _init_options) do
     case Redix.command(:redix, ["GET", namespaced_key]) do
