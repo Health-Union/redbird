@@ -5,7 +5,7 @@ defmodule Redbird do
     import Supervisor.Spec
 
     children = [
-      {Redix, {fetch_env_value(:uri), {fetch_env_value(:opts) || []}}
+      {Redix, {fetch_env_value(:uri), fetch_env_value(:opts) || []}}
     ]
 
     opts = [strategy: :one_for_one, name: Redbird.Supervisor]
