@@ -25,7 +25,7 @@ defmodule Plug.Session.REDIS do
   end
 
   def put(_conn, namespaced_key, data, init_options) do
-    Redix.command(:redix, ["SETEX", namespaced_key, session_expiration(init_options), data])
+    Redix.command(:redix, ["SETEX", namespaced_key, session_expiration(init_options), data |> :erlang.term_to_binary()])
     namespaced_key
   end
 
